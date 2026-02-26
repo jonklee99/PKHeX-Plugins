@@ -598,6 +598,117 @@ public static class APILegality
         pk.SetSuggestedBall(enc, SetMatchingBalls, ForceSpecifiedBall, regen.Extra.Ball);
         pk.ApplyMarkings(UseMarkings);
         pk.ApplyBattleVersion(handler);
+
+        // Final attempt to restore user-specified values if they weren't applied correctly
+        // This is especially important for Gen 8+ encounters where PIDIV was set separately
+        TryRestoreUserSpecifiedValues(pk, set, enc);
+    }
+
+    /// <summary>
+    /// Attempts to restore user-specified IVs, Gender, and Nature if they weren't applied correctly
+    /// during the normal generation process. Only applies changes that result in a legal Pokémon.
+    /// </summary>
+    private static void TryRestoreUserSpecifiedValues(PKM pk, IBattleTemplate set, IEncounterTemplate enc)
+    {
+        // Skip for encounters with fixed IVs that cannot be changed
+        if (enc is IFixedIVSet { IVs.IsSpecified: true })
+            return;
+
+        bool needsIVFix = false;
+        bool needsNatureFix = false;
+        bool needsGenderFix = false;
+
+        // Check if IVs differ from requested
+        for (int i = 0; i < 6; i++)
+        {
+            if (pk.GetIV(i) != set.IVs[i])
+            {
+                needsIVFix = true;
+                break;
+            }
+        }
+
+        // Check if Nature differs from requested
+        if (set.Nature != Nature.Random && pk.Nature != set.Nature)
+            needsNatureFix = true;
+
+        // Check if Gender differs from requested
+        if (set.Gender is (0 or 1) && pk.Gender != set.Gender)
+        {
+            var pi = pk.PersonalInfo;
+            bool canBeRequestedGender = (set.Gender == 0 && !pi.OnlyFemale && !pi.Genderless) ||
+                                        (set.Gender == 1 && !pi.OnlyMale && !pi.Genderless);
+            if (canBeRequestedGender)
+                needsGenderFix = true;
+        }
+
+        // If nothing needs fixing, return early
+        if (!needsIVFix && !needsNatureFix && !needsGenderFix)
+            return;
+
+        // For Gen 8+, we have more flexibility since there's no PID-IV/Nature correlation
+        if (enc.Generation >= 8)
+        {
+            // Try to apply all changes at once
+            var clone = pk.Clone();
+
+            if (needsIVFix)
+                clone.SetIVs(set.IVs);
+
+            if (needsNatureFix)
+            {
+                clone.Nature = set.Nature;
+                clone.StatNature = set.Nature;
+            }
+
+            if (needsGenderFix)
+                clone.Gender = (byte)set.Gender!.Value;
+
+            var la = new LegalityAnalysis(clone);
+            if (la.Valid)
+            {
+                // Apply all changes
+                if (needsIVFix)
+                    pk.SetIVs(set.IVs);
+                if (needsNatureFix)
+                {
+                    pk.Nature = set.Nature;
+                    pk.StatNature = set.Nature;
+                }
+                if (needsGenderFix)
+                    pk.Gender = (byte)set.Gender!.Value;
+                return;
+            }
+
+            // If all at once fails, try one at a time (IVs are most commonly requested)
+            if (needsIVFix)
+            {
+                var ivClone = pk.Clone();
+                ivClone.SetIVs(set.IVs);
+                if (new LegalityAnalysis(ivClone).Valid)
+                    pk.SetIVs(set.IVs);
+            }
+
+            if (needsNatureFix)
+            {
+                var natureClone = pk.Clone();
+                natureClone.Nature = set.Nature;
+                natureClone.StatNature = set.Nature;
+                if (new LegalityAnalysis(natureClone).Valid)
+                {
+                    pk.Nature = set.Nature;
+                    pk.StatNature = set.Nature;
+                }
+            }
+
+            if (needsGenderFix)
+            {
+                var genderClone = pk.Clone();
+                genderClone.Gender = (byte)set.Gender!.Value;
+                if (new LegalityAnalysis(genderClone).Valid)
+                    pk.Gender = (byte)set.Gender!.Value;
+            }
+        }
     }
 
     /// <summary>
@@ -1227,10 +1338,20 @@ public static class APILegality
     /// </summary>
     public static EncounterCriteria SetSpecialCriteria(EncounterCriteria criteria, IEncounterTemplate enc, IBattleTemplate set)
     {
-        if (enc is (IEncounterEgg and not EncounterEgg8b))
+        // Preserve all criteria for eggs - IVs, nature, and gender should be respected
+        if (enc is IEncounterEgg)
             return criteria;
+
+        // For Gen 8+, preserve nature (can be minted) and all IVs (no PID-IV correlation)
         if (enc.Generation > 7)
-            criteria = criteria with { Nature = Nature.Random };
+            return enc.Species switch
+            {
+                (int)Species.Unown => criteria with { Form = (sbyte)set.Form },
+                _ => criteria, // Preserve all criteria for Gen 8+
+            };
+
+        // For older gens (3-7), handle specific cases where certain IV values are critical for competitive builds
+        // The encounter generation will respect the criteria where possible given PID-IV constraints
         return enc.Species switch
         {
             (int)Species.Kartana when criteria is { Nature: Nature.Timid, IV_ATK: <= 21 } => // Beast Boost: Speed
@@ -1239,8 +1360,9 @@ public static class APILegality
                 Revise(criteria, def: criteria.IV_DEF, spe: criteria.IV_SPE),
             (int)Species.Pyukumuku when criteria is { IV_DEF: 0, IV_SPD: 0 } && set.Ability == (int)Ability.InnardsOut =>
                 Revise(criteria, def: criteria.IV_DEF, spd: criteria.IV_SPD),
-            (int)Species.Unown when enc.Generation is 4 => criteria with { Form = (sbyte)set.Form},
-            _ => Revise(criteria, atk: criteria.IV_ATK == 0 ? (sbyte)0 : (sbyte)-1, spe: criteria.IV_SPE == 0 ? (sbyte)0 : (sbyte)-1),
+            (int)Species.Unown when enc.Generation is 4 => criteria with { Form = (sbyte)set.Form },
+            // Default: preserve all criteria - encounter generation will handle PID-IV correlation constraints
+            _ => criteria,
         };
     }
 
@@ -1421,7 +1543,11 @@ public static class APILegality
             raw.IsEgg = true;
             raw.SetEggMoves(set, enc);
             raw.CurrentFriendship = (byte)EggStateLegality.GetMinimumEggHatchCycles(raw);
-            
+
+            // Apply user-specified IVs if they differ from what was generated
+            // Eggs can have any legal IVs through breeding mechanics
+            ApplyUserSpecifiedEggValues(raw, set);
+
             // if egg wasn't originally obtained by OT => Link Trade, else => None
             if (raw.Format >= 4)
             {
@@ -1461,5 +1587,75 @@ public static class APILegality
             }
         }
         return template;
+    }
+
+    /// <summary>
+    /// Applies user-specified IVs, Gender, and Nature to an egg if they result in a legal Pokémon.
+    /// Eggs have more flexibility in these values due to breeding mechanics.
+    /// </summary>
+    private static void ApplyUserSpecifiedEggValues(PKM pk, IBattleTemplate set)
+    {
+        bool modified = false;
+
+        // Apply user-specified IVs - eggs can have any IVs through breeding
+        bool hasUserIVs = set.IVs.Any(iv => iv != 31);
+        if (hasUserIVs || set.IVs.All(iv => iv == 31))
+        {
+            // Check if IVs differ from current
+            bool ivsDiffer = false;
+            for (int i = 0; i < 6; i++)
+            {
+                if (pk.GetIV(i) != set.IVs[i])
+                {
+                    ivsDiffer = true;
+                    break;
+                }
+            }
+
+            if (ivsDiffer)
+            {
+                pk.SetIVs(set.IVs);
+                modified = true;
+            }
+        }
+
+        // Apply user-specified Nature - eggs can have any nature through breeding
+        if (set.Nature != Nature.Random && pk.Nature != set.Nature)
+        {
+            pk.Nature = set.Nature;
+            pk.StatNature = set.Nature;
+            modified = true;
+        }
+
+        // Apply user-specified Gender if the species supports it
+        if (set.Gender is (0 or 1) && pk.Gender != set.Gender)
+        {
+            var pi = pk.PersonalInfo;
+            bool canBeMale = !pi.Genderless && !pi.OnlyFemale;
+            bool canBeFemale = !pi.Genderless && !pi.OnlyMale;
+
+            if ((set.Gender == 0 && canBeMale) || (set.Gender == 1 && canBeFemale))
+            {
+                pk.Gender = (byte)set.Gender.Value;
+                modified = true;
+            }
+        }
+
+        // Verify the modifications don't break legality
+        if (modified)
+        {
+            var la = new LegalityAnalysis(pk);
+            if (!la.Valid)
+            {
+                // If invalid, try to restore at least IVs (most commonly requested)
+                var clone = pk.Clone();
+                clone.SetIVs(set.IVs);
+                var laIV = new LegalityAnalysis(clone);
+                if (laIV.Valid)
+                {
+                    pk.SetIVs(set.IVs);
+                }
+            }
+        }
     }
 }

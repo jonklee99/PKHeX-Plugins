@@ -9,7 +9,7 @@ namespace PKHeX.Core.AutoMod;
 public static class ShowdownEdits
 {
     /// <summary>
-    /// Quick Gender Toggle
+    /// Quick Gender Toggle - Attempts to preserve user-specified gender when possible
     /// </summary>
     /// <param name="pk">PKM whose gender needs to be toggled</param>
     /// <param name="set">Showdown Set for Gender reference</param>
@@ -22,7 +22,26 @@ public static class ShowdownEdits
 
         var genderMismatch = la.Results.Any(z => z.Result == LegalityCheckResultCode.PIDGenderMismatch);
         if (genderMismatch)
-            pk.Gender = pk.Gender == 0 ? (byte)1 : (byte)0;
+        {
+            // For Gen 6+, gender is stored separately from PID, so we can usually keep the user's gender
+            // Only toggle if absolutely necessary for legality
+            if (pk.Generation >= 6)
+            {
+                // Try to validate with the user's requested gender first
+                var requestedGender = set.Gender ?? pk.GetSaneGender();
+                pk.Gender = requestedGender;
+                var laCheck = new LegalityAnalysis(pk);
+
+                // If still has gender mismatch, it's a fundamental issue - toggle as fallback
+                if (laCheck.Results.Any(z => z.Result == LegalityCheckResultCode.PIDGenderMismatch))
+                    pk.Gender = pk.Gender == 0 ? (byte)1 : (byte)0;
+            }
+            else
+            {
+                // For older gens with PID-Gender correlation, toggling may be necessary
+                pk.Gender = pk.Gender == 0 ? (byte)1 : (byte)0;
+            }
+        }
 
         if (pk.Gender is not 0 and not 1)
             pk.Gender = pk.GetSaneGender();
@@ -59,6 +78,18 @@ public static class ShowdownEdits
             return;
         }
         pk.SetNature(val);
+
+        // For Gen 8+, nature can always be minted, so don't revert user's requested nature
+        // For eggs, nature is inherited/random, so preserve user's request
+        if (enc.Generation >= 8 || enc is IEncounterEgg)
+        {
+            // Ensure StatNature matches for minting purposes in Gen 8+
+            if (pk.Format >= 8 && pk.StatNature != pk.Nature && pk.StatNature is 0 or Nature.Docile or Nature.Bashful or >= Nature.Quirky)
+                pk.StatNature = Nature.Serious;
+            return;
+        }
+
+        // For Gen 3-7 non-eggs, check if nature change causes legality issues
         if (enc.Generation is not (3 or 4))
         {
             var orig = pk.Nature;
@@ -70,8 +101,15 @@ public static class ShowdownEdits
             var la2 = new LegalityAnalysis(pk);
             var enc1 = la.EncounterMatch;
             var enc2 = la2.EncounterMatch;
-            if (enc is not IEncounterEgg && ((!ReferenceEquals(enc1, enc2) && enc1 is not IEncounterEgg) || la2.Results.Any(z => z.Identifier is CheckIdentifier.Nature or CheckIdentifier.Encounter && !z.Valid)))
-                pk.Nature = orig;
+
+            // Only revert if the encounter itself changes (not just a nature check failure)
+            // Nature check failures can often be resolved by the encounter matching process
+            if (!ReferenceEquals(enc1, enc2) && enc1 is not IEncounterEgg)
+            {
+                // Check if the new encounter is still valid for this species
+                if (la2.Results.Any(z => z.Identifier == CheckIdentifier.Encounter && !z.Valid))
+                    pk.Nature = orig;
+            }
         }
         if (pk.Format >= 8 && pk.StatNature != pk.Nature && pk.StatNature is 0 or Nature.Docile or Nature.Bashful or >= Nature.Quirky) // Only Serious Mint for Neutral Natures
             pk.StatNature = Nature.Serious;
