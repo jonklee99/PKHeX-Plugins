@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
     <PackageReference Include="LibUsbDotNet" Version="2.2.29" />
-    <ProjectReference Include="..\..\PKHeX\PKHeX.Core\PKHeX.Core.csproj" />
+    <ProjectReference Include="..\..\PKHeX-Original\PKHeX.Core\PKHeX.Core.csproj" />
   </ItemGroup>
 </Project>
