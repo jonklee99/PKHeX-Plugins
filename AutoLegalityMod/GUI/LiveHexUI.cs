@@ -569,13 +569,10 @@ public partial class LiveHeXUI : Form, ISlotViewer<PictureBox>
             return;
         }
 
-        ulong heap = sb.GetHeapBase();
-        address -= heap;
+
 
         Clipboard.SetText(address.ToString("X"));
-        bool getDetails = (ModifierKeys & Keys.Control) == Keys.Control;
-        if (getDetails)
-            Clipboard.SetText($"Absolute Address: {address + heap:X}\nHeap Address: {address:X}\nHeap Base: {heap:X}");
+
     }
 
     private void B_EditPointerData_Click(object sender, EventArgs e)

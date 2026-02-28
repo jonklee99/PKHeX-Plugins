@@ -67,7 +67,9 @@ public sealed class LPPointer : InjectionBase
         Get(0x2D87BE5C, "[[[main+610A710]+68]+40]", "Zukan", "Pokedex"),
         Get(0x1D7EE369, "[main+610F5A0]", "KTicketPointsZARoyaleInfinite", "ZA Royale Ticket Points", SCTypeCode.UInt32, RWMethod.Main), //Thank you Anubis
         Get(0x0235471C, "[[main+610A710]+160]+50", "KHyperspaceSurveyPoints", "Hyperspace Survey Points", SCTypeCode.UInt32),//Thank you Anubis
-        Get(0xBE007476, "[[[main+610A710]+150]+40]", "KDonuts", "Donuts")//Thank you Anubis
+        Get(0xBE007476, "[[[main+610A710]+150]+40]", "KDonuts", "Donuts"),//Thank you Anubis
+        Get(0x9E14BFFB, "[[[main+610A498]+328]+130]+1C0", "KHyperspaceZones", "Hyperspace Special Scan Seed", SCTypeCode.UInt64),
+        Get(0x9E14BFFB, "[[[main+610A498]+328]+130]+1B8", "KHyperspaceZones", "Hyperspace Special Scan Pity", SCTypeCode.Byte)
     ];
     public static readonly BlockData[] Blocks_ZA_v200 =
     [
