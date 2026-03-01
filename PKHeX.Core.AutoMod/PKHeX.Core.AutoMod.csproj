@@ -1,7 +1,2 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <ItemGroup>
-    <Reference Include="PKHeX.Core">
-      <HintPath>..\lib\PKHeX.Core.dll</HintPath>
-    </Reference>
-  </ItemGroup>
 </Project>

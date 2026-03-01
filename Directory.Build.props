@@ -7,4 +7,9 @@
     <NeutralLanguage>en</NeutralLanguage>
     <SourceRevisionId>$([System.DateTime]::UtcNow.ToString("yyMMddHHmmss"))</SourceRevisionId>
   </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="PKHeX.Core">
+      <HintPath>$(MSBuildThisFileDirectory)deps\PKHeX.Core.dll</HintPath>
+    </Reference>
+  </ItemGroup>
 </Project>

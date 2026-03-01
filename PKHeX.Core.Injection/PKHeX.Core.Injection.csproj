@@ -1,8 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
     <PackageReference Include="LibUsbDotNet" Version="2.2.29" />
-    <Reference Include="PKHeX.Core">
-      <HintPath>..\lib\PKHeX.Core.dll</HintPath>
-    </Reference>
   </ItemGroup>
 </Project>

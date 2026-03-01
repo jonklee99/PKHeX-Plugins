@@ -13,6 +13,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PKHeX.Core.AutoMod", "PKHeX
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugins", "Plugins", "{C280F954-8B81-4014-881C-D3FBF0CC2E44}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "deps", "deps", "{B1A2C3D4-E5F6-7890-ABCD-EF1234567891}"
+	ProjectSection(SolutionItems) = preProject
+		deps\PKHeX.Core.dll = deps\PKHeX.Core.dll
+	EndProjectSection
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PKHeX.Core.Injection", "PKHeX.Core.Injection\PKHeX.Core.Injection.csproj", "{DB4DA5C0-DFB3-490E-90E1-CDD9330267F2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PKHeX.Core.Enhancements", "PKHeX.Core.Enhancements\PKHeX.Core.Enhancements.csproj", "{165D144A-DBB4-4F3B-BF39-E783B41008C3}"
