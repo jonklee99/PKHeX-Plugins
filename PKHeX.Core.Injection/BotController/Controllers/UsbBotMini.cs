@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -153,6 +154,11 @@ public sealed class UsbBotMini : ICommunicatorNX, IPokeBlocks
         SendInternal(cmd);
         var buffer = new byte[(8 * 2) + 1];
         _ = ReadInternal(buffer);
+        if (buffer.Length < sizeof(ulong))
+        {
+            Debug.WriteLine($"{nameof(GetHeapBase)}: Invalid response length");
+            return 0;
+        }
         return ReadUInt64LittleEndian(buffer);
     }
 
@@ -160,6 +166,11 @@ public sealed class UsbBotMini : ICommunicatorNX, IPokeBlocks
     {
         SendInternal(SwitchCommand.GetTitleID(false));
         byte[] baseBytes = ReadBulkUSB();
+        if (baseBytes.Length == 0)
+        {
+            Debug.WriteLine($"{nameof(GetTitleID)}: Invalid response");
+            return string.Empty;
+        }
         return ReadUInt64LittleEndian(baseBytes).ToString("X16").Trim();
     }
 
@@ -167,6 +178,11 @@ public sealed class UsbBotMini : ICommunicatorNX, IPokeBlocks
     {
         SendInternal(SwitchCommand.GetBotbaseVersion(false));
         byte[] baseBytes = ReadBulkUSB();
+        if (baseBytes.Length == 0)
+        {
+            Debug.WriteLine($"{nameof(GetBotbaseVersion)}: Invalid response");
+            return string.Empty;
+        }
         return Encoding.UTF8.GetString(baseBytes).Trim('\0');
     }
 
@@ -174,6 +190,11 @@ public sealed class UsbBotMini : ICommunicatorNX, IPokeBlocks
     {
         SendInternal(SwitchCommand.GetGameInfo(info, false));
         byte[] baseBytes = ReadBulkUSB();
+        if (baseBytes.Length == 0)
+        {
+            Debug.WriteLine($"{nameof(GetGameInfo)}: Invalid response");
+            return string.Empty;
+        }
         return Encoding.UTF8.GetString(baseBytes).Trim('\0');
     }
 
@@ -181,45 +202,71 @@ public sealed class UsbBotMini : ICommunicatorNX, IPokeBlocks
     {
         SendInternal(SwitchCommand.IsProgramRunning(pid, false));
         byte[] baseBytes = ReadBulkUSB();
+        if (baseBytes.Length == 0)
+        {
+            Debug.WriteLine($"{nameof(IsProgramRunning)}: Invalid response");
+            return false;
+        }
         return baseBytes.Length == 1 && BitConverter.ToBoolean(baseBytes, 0);
     }
 
     private int ReadInternal(byte[] buffer)
     {
-        byte[] sizeOfReturn = new byte[4];
+        try
+        {
+            byte[] sizeOfReturn = new byte[4];
+            if (reader == null)
+                throw new Exception("USB device not found or not connected.");
 
-        // read size, no error checking as of yet, should be the required 368 bytes
-        if (reader == null)
-            throw new Exception("USB writer is null, you may have disconnected the device during previous function");
+            var ec = reader.Read(sizeOfReturn, 5000, out int ret);
+            if (ec != ErrorCode.None && ret == 0)
+                throw new Exception(UsbDevice.LastErrorString);
 
-        reader.Read(sizeOfReturn, 5000, out _);
+            ec = reader.Read(buffer, 5000, out var lenVal);
+            if (ec != ErrorCode.None)
+                throw new Exception(UsbDevice.LastErrorString);
 
-        // read stack
-        reader.Read(buffer, 5000, out var lenVal);
-        return lenVal;
+            return lenVal;
+        }
+        catch (Exception ex)
+        {
+            // Win32Error is returned when the device aborts a transfer, which happens when, for example, readMem() is called with an invalid address.
+            // As such, we ignore it to avoid log spam, log other exceptions, and return 0 to maintain connection.
+            var lastError = UsbDevice.LastErrorNumber;
+            if (lastError is not (int)ErrorCode.Win32Error)
+                Debug.WriteLine($"{nameof(ReadInternal)} failed: {ex.Message}");
+            return 0;
+        }
     }
+
 
     private int SendInternal(byte[] buffer)
     {
-        if (writer == null)
-            throw new Exception("USB writer is null, you may have disconnected the device during previous function");
+        try
+        {
+            if (writer == null)
+                throw new Exception("USB device not found or not connected.");
 
-        uint pack = (uint)buffer.Length + 2;
-        byte[] msg = new byte[4];
-        WriteUInt32LittleEndian(msg, pack);
-        var ec = writer.Write(msg, 2000, out _);
-        if (ec != ErrorCode.None)
-        {
-            Disconnect();
-            throw new Exception(UsbDevice.LastErrorString);
+            uint pack = (uint)buffer.Length + 2;
+            var ec = writer.Write(BitConverter.GetBytes(pack), 2000, out int ret);
+            if (ec != ErrorCode.None && ret == 0)
+                throw new Exception(UsbDevice.LastErrorString);
+
+            ec = writer.Write(buffer, 2000, out var l);
+            if (ec != ErrorCode.None)
+                throw new Exception(UsbDevice.LastErrorString);
+
+            return l;
         }
-        ec = writer.Write(buffer, 2000, out var l);
-        if (ec != ErrorCode.None)
+        catch (Exception ex)
         {
-            Disconnect();
-            throw new Exception(UsbDevice.LastErrorString);
+            // Win32Error is returned when the device aborts a transfer, which happens when, for example, readMem() is called with an invalid address.
+            // As such, we ignore it to avoid log spam, log other exceptions, and return 0 to maintain connection.
+            var lastError = UsbDevice.LastErrorNumber;
+            if (lastError is not (int)ErrorCode.Win32Error)
+                Debug.WriteLine($"{nameof(SendInternal)} failed: {ex.Message}");
+            return 0;
         }
-        return l;
     }
 
     public int Read(byte[] buffer)
@@ -262,30 +309,45 @@ public sealed class UsbBotMini : ICommunicatorNX, IPokeBlocks
         // Give it time to push back.
         Thread.Sleep(1);
 
-        if (reader == null)
-            throw new Exception("USB device not found or not connected.");
-
-        // Let usb-botbase tell us the response size.
-        byte[] sizeOfReturn = new byte[4];
-        reader.Read(sizeOfReturn, 5000, out _);
-
-        int size = ReadInt32LittleEndian(sizeOfReturn);
-        byte[] buffer = new byte[size];
-
-        // Loop until we have read everything.
-        int transfSize = 0;
-        while (transfSize < size)
+        lock (_sync)
         {
-            Thread.Sleep(1);
-            var ec = reader.Read(buffer, transfSize, Math.Min(reader.ReadBufferSize, size - transfSize), 5000, out int lenVal);
-            if (ec != ErrorCode.None)
+            try
             {
-                Disconnect();
-                throw new Exception(UsbDevice.LastErrorString);
+                if (reader == null)
+                    throw new Exception("USB device not found or not connected.");
+
+                // Let usb-botbase tell us the response size.
+                byte[] sizeOfReturn = new byte[4];
+                var ec = reader.Read(sizeOfReturn, 5000, out int ret);
+                if (ec != ErrorCode.None && ret == 0)
+                    throw new Exception(UsbDevice.LastErrorString);
+
+                int size = BitConverter.ToInt32(sizeOfReturn, 0);
+                byte[] buffer = new byte[size];
+
+                // Loop until we have read everything.
+                int transfSize = 0;
+                while (transfSize < size)
+                {
+                    Thread.Sleep(1);
+                    ec = reader.Read(buffer, transfSize, Math.Min(reader.ReadBufferSize, size - transfSize), 5000, out int lenVal);
+                    if (ec != ErrorCode.None)
+                        throw new Exception(UsbDevice.LastErrorString);
+
+                    transfSize += lenVal;
+                }
+                return buffer;
             }
-            transfSize += lenVal;
+            catch (Exception ex)
+            {
+                // Win32Error is returned when the device aborts a transfer, which happens when, for example, readMem() is called with an invalid address.
+                // As such, we ignore it to avoid log spam but still return a zero-buffer to avoid crashing the caller, and to maintain connection.
+                var lastError = UsbDevice.LastErrorNumber;
+                if (lastError is not (int)ErrorCode.Win32Error)
+                    Debug.WriteLine($"{nameof(ReadBulkUSB)} failed: {ex.Message}");
+                return [0];
+            }
         }
-        return buffer;
     }
 
     public void WriteBytesUSB(ReadOnlySpan<byte> data, ulong offset, RWMethod method)

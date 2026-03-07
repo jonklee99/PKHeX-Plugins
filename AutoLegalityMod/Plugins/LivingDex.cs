@@ -47,7 +47,8 @@ public class LivingDex : AutoModPlugin
         var dex = await Task.Run(() => egg ? sav.GenerateLivingEggDex(sav.Personal) : sav.GenerateLivingDex(sav.Personal));
         List<PKM> extra = [];
         t.Close();
-        int generated = IngestToBoxes(sav, dex, extra);
+        prompt = WinFormsUtil.Prompt(MessageBoxButtons.YesNo, "Overwrite any existing Pokémon in your boxes?");
+        int generated = IngestToBoxes(sav, dex, extra, prompt == DialogResult.Yes);
         System.Diagnostics.Debug.WriteLine($"Generated Living Dex with {generated} entries.");
         SaveFileEditor.ReloadSlots();
         if (extra.Count == 0)
@@ -77,30 +78,32 @@ public class LivingDex : AutoModPlugin
             }
         }
     }
-    private static int IngestToBoxes(SaveFile sav, IEnumerable<PKM> list, IList<PKM> extra, int slot = 0)
+    private static int IngestToBoxes(SaveFile sav, IEnumerable<PKM> list, IList<PKM> extra, bool overwrite, int slot = 0)
     {
         int generated = 0;
         foreach (var pk in list)
         {
             generated++;
-            if (TryAdd(sav, extra, pk, ref slot))
+            if (TryAdd(sav, extra, pk, overwrite, ref slot))
                 continue;
             do
             {
                 slot++;
             }
-            while (!TryAdd(sav, extra, pk, ref slot));
+            while (!TryAdd(sav, extra, pk,overwrite, ref slot));
         }
         return generated;
     }
 
-    private static bool TryAdd(SaveFile sav, IList<PKM> extra, PKM pk, ref int slot)
+    private static bool TryAdd(SaveFile sav, IList<PKM> extra, PKM pk, bool overwrite, ref int slot)
     {
         if (slot >= sav.SlotCount)
         {
             extra.Add(pk);
             return true;
         }
+        if (!overwrite && sav.NextOpenBoxSlot(slot - 1) != slot)
+            return false;
         if (!sav.IsBoxSlotOverwriteProtected(slot))
         {
             sav.SetBoxSlotAtIndex(pk, slot++);
