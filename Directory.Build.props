@@ -9,7 +9,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="PKHeX.Core">
-      <HintPath>$(MSBuildThisFileDirectory)deps\PKHeX.Core.dll</HintPath>
+      <HintPath>$(MSBuildThisFileDirectory)PKHeX.Core.AutoMod\deps\PKHeX.Core.dll</HintPath>
+      <Private>false</Private>
     </Reference>
   </ItemGroup>
 </Project>
