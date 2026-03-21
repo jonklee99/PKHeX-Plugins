@@ -158,7 +158,8 @@ public class PluginSettings
 
     [Browsable(false)]
     public string LatestAllowedVersion { get; set; } = "0.0.0.0";
-
+    [Browsable(false)]
+    public decimal refreshRate { get; set; } = 1000;
     public void Save()
     {
         string output = JsonSerializer.Serialize(this, CachedJsonSerializerOptions);

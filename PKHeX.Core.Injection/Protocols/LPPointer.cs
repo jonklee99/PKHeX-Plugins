@@ -15,6 +15,7 @@ public sealed class LPPointer : InjectionBase
         ZA_v103,
         ZA_v200,
         ZA_v201,
+        ZA_v202,
         SV_v101,
         SV_v110,
         SV_v120,
@@ -217,6 +218,7 @@ public sealed class LPPointer : InjectionBase
     // LiveHexVersion -> Blockname -> List of <SCBlock Keys, OffsetValues>
     public static readonly Dictionary<LiveHeXVersion, BlockData[]> SCBlocks = new()
     {
+        { ZA_v202, Blocks_ZA_v201 },
         { ZA_v201, Blocks_ZA_v201 },
         { ZA_v200, Blocks_ZA_v200 },
         { ZA_v103, Blocks_ZA_v103 },
@@ -252,7 +254,8 @@ public sealed class LPPointer : InjectionBase
 
     private static string GetB1S1Pointer(LiveHeXVersion lv) => lv switch
     {
-        ZA_v201 => "[[[main+610A710]+B0]+978]", //Future version placeholder
+        ZA_v202 => "[[[main+610A710]+B0]+978]",
+        ZA_v201 => "[[[main+610A710]+B0]+978]", 
         ZA_v200 => "[[[main+6105710]+B0]+978]",
         ZA_v103 => "[[[main+5F0E250]+B0]+978]",
         ZA_v102 => "[[[main+5F0C250]+B0]+978]", 
@@ -274,6 +277,7 @@ public sealed class LPPointer : InjectionBase
 
     public static string GetSaveBlockPointer(LiveHeXVersion lv) => lv switch
     {
+        ZA_v202 => "[[main+610A670]+30]",
         ZA_v201 => "[[main+610A670]+30]",
         ZA_v200 => "[[main+6105670]+30]",
         ZA_v103 => "[[main+5F0E1B0]+30]",

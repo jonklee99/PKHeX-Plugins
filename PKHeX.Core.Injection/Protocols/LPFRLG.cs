@@ -14,7 +14,8 @@ public sealed class LPFRLG : InjectionBase
     public static ReadOnlySpan<LiveHeXVersion> SupportedVersions => [ FRLG_D_v100, FRLG_E_v100, FRLG_F_v100, FRLG_I_v100, FRLG_J_v100, FRLG_S_v100];
     private const uint fakeHeap = 0x2020000;
     private const uint startingOffset = 0x1208000;
-    private const int largeBlockSize = 0x3e00;
+    private const int largeBlockSize = 0x3D68;
+    private const int smallBlockSize = 0xF24;
     private const int offsetPointerSize = 4;
     private const uint slotOffset = 4;
     public uint securitykey = 0;
@@ -97,19 +98,21 @@ public sealed class LPFRLG : InjectionBase
         read = null;
         try
         {
-            var offsets = SCBlocks[psb.Version].FirstOrDefault(z => z.Display == (block == "Large" ? "Items" : block))
+            var offsets = SCBlocks[psb.Version].FirstOrDefault(z => z.Display ==  block)
                 ?? throw new KeyNotFoundException($"Block '{block}' not found for version {psb.Version}");
-            var props = sav.GetType().GetProperty(block) ?? throw new Exception($"{block} not found");
+            var props = sav.GetType().GetProperties().Where(p => p.Name == offsets.Name).ToArray()[1] ?? throw new Exception($"{block} not found");
             var blockoff = GetBlockOffset(psb, offsets);
-            var size = offsets.Name == "Large" ? largeBlockSize : Marshal.SizeOf(props.PropertyType);
+            var size = offsets.Name == "LargeBlock" ? largeBlockSize : smallBlockSize;
             var ram = psb.com.ReadBytes(blockoff, size);
-            var val = ConvertValue(props, ram);
-            if (offsets.IsSecured)
-                val = (uint)val ^ ((SAV3FRLG)sav).SecurityKey;
-            if (offsets.Display == "Large")
-                ram.CopyTo(((SAV3)sav).Large);
-            else
-                props.SetValue(sav, val);
+            var val = props.GetValue(sav);
+            if (offsets.Name == "LargeBlock" && val is SaveBlock3LargeFRLG sbl)
+            {
+                ram.CopyTo(sbl.Data);
+            }
+            else if (offsets.Name == "SmallBlock" && val is SaveBlock3SmallFRLG sbs)
+            {
+                ram.CopyTo(sbs.Data);
+            }
             read = [ram.ToArray()];
             return true;
         }
@@ -122,19 +125,16 @@ public sealed class LPFRLG : InjectionBase
 
     public override void WriteBlocksFromSAV(PokeSysBotMini psb, string block, SaveFile sav)
     {
-        var props = sav.GetType().GetProperty(block) ?? throw new Exception($"{block} not found");
-        var offsets = SCBlocks[psb.Version].FirstOrDefault(z => z.Display == (block == "Large" ? "Items" : block))
-            ?? throw new KeyNotFoundException($"Block '{block}' not found for version {psb.Version}");
-        var data = block == "Large" ? ((SAV3)sav).Large.ToArray() : props.GetValue(sav) ?? 0;
-        if (offsets.IsSecured)
-            data = (uint)data ^ ((SAV3FRLG)sav).SecurityKey;
+        var offsets = SCBlocks[psb.Version].FirstOrDefault(z => z.Display == block) ?? throw new KeyNotFoundException($"Block '{block}' not found for version {psb.Version}");
+        var props = sav.GetType().GetProperties().Where(p=> p.Name == offsets.Name) ?? throw new Exception($"{block} not found");
+        var data = offsets.Name == "LargeBlock" ? ((SAV3)sav).LargeBlock.Data : ((SAV3)sav).SmallBlock.Data;
         var blockoff = GetBlockOffset(psb, offsets);
-        psb.com.WriteBytes(block == "Large" ? (byte[])data : BitConverter.GetBytes((uint)data), blockoff);
+        psb.com.WriteBytes(data, blockoff);
     }
 
     private static uint GetBlockOffset(PokeSysBotMini psb, BlockData offsets)
     {
-        var offsetAccessor = offsets.Name == "Large" ? GetLargeBlockOffset(psb.Version) : GetSmallBlockOffset(psb.Version);
+        var offsetAccessor = offsets.Name == "LargeBlock" ? GetLargeBlockOffset(psb.Version) : GetSmallBlockOffset(psb.Version);
         var blockoffbytes = psb.com.ReadBytes(offsetAccessor, offsetPointerSize);
         var blockoff = BitConverter.ToUInt32(blockoffbytes);
         blockoff -= fakeHeap;
@@ -176,10 +176,9 @@ public sealed class LPFRLG : InjectionBase
     };
     public static readonly BlockData[] Blocks_FRLG =
     [
-        Get(0x290, "Large", "Money", true),
-        Get(0x294, "Large", "Coin", true),
-        Get(0, "Large", "Items"),
-        Get(0xF20, "Small", "SecurityKey")
+        Get(0, "LargeBlock", "TrainerInfo", true),
+        Get(0, "LargeBlock", "Inventory"),
+        Get(0, "SmallBlock", "SecurityKey")
     ];
     public static readonly Dictionary<LiveHeXVersion, BlockData[]> SCBlocks = new()
     {
@@ -192,7 +191,7 @@ public sealed class LPFRLG : InjectionBase
     };
     public override Dictionary<string, string> SpecialBlocks { get; } = new()
     {
-        { "Large", "B_OpenItemPouch_Click" },
+        { "Inventory", "B_OpenItemPouch_Click" },
     };
 }
 

@@ -129,7 +129,7 @@ namespace AutoModPlugins.GUI
             // 
             // B_Load
             // 
-            B_Load.Anchor = AnchorStyles.Right;
+            B_Load.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             B_Load.Location = new System.Drawing.Point(381, 12);
             B_Load.Margin = new Padding(4, 3, 4, 3);
             B_Load.Name = "B_Load";
@@ -141,7 +141,7 @@ namespace AutoModPlugins.GUI
             // 
             // B_Save
             // 
-            B_Save.Anchor = AnchorStyles.Right;
+            B_Save.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             B_Save.Location = new System.Drawing.Point(381, 44);
             B_Save.Margin = new Padding(4, 3, 4, 3);
             B_Save.Name = "B_Save";
@@ -169,6 +169,7 @@ namespace AutoModPlugins.GUI
             Margin = new Padding(4, 3, 4, 3);
             MaximizeBox = false;
             MinimizeBox = false;
+            MinimumSize = new System.Drawing.Size(464, 435);
             Name = "SimpleHexEditor";
             ShowIcon = false;
             StartPosition = FormStartPosition.CenterParent;

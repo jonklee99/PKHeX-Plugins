@@ -50,7 +50,7 @@ public abstract class InjectionBase
         { LegendsArceus_ID, [LA_v100, LA_v101, LA_v102, LA_v111] },
         { Scarlet_ID, [SV_v101, SV_v110, SV_v120, SV_v130, SV_v131, SV_v132, SV_v201, SV_v202, SV_v300, SV_v301, SV_v400] },
         { Violet_ID,  [SV_v101, SV_v110, SV_v120, SV_v130, SV_v131, SV_v132, SV_v201, SV_v202, SV_v300, SV_v301, SV_v400] },
-        { ZA_ID, [ZA_v101, ZA_v102, ZA_v103, ZA_v200, ZA_v201] },
+        { ZA_ID, [ZA_v101, ZA_v102, ZA_v103, ZA_v200, ZA_v201, ZA_v202] },
         { FR_E_ID, [FRLG_E_v100] },
         { LG_E_ID, [FRLG_E_v100] },
         { FR_S_ID, [FRLG_S_v100] },

@@ -89,7 +89,7 @@ public static class InjectionUtil
     private static int GetBlockSize(LiveHeXVersion version) => version switch
     {
         
-        >= LiveHeXVersion.SV_v130 and < LiveHeXVersion.ZA_v101 => 48, // Thanks, santacrab!
+        >= LiveHeXVersion.SV_v130 and < LiveHeXVersion.ZA_v101 => 48,
         _ => 32,
     };
 }

@@ -19,12 +19,13 @@ public partial class SimpleHexEditor : Form
     private static int headersize;
     private readonly RWMethod method;
     private readonly PokeSysBotMini? psb;
-
-    public SimpleHexEditor(byte[] originalBytes, PokeSysBotMini? bot = null, ulong addr = 0, RWMethod rwm = RWMethod.Heap, bool decrypt_blk = false, uint decrypt_key = 0, int header = 0)
+    public decimal RefreshRate { get; private set; }
+    public SimpleHexEditor(byte[] originalBytes, PokeSysBotMini? bot = null, ulong addr = 0, RWMethod rwm = RWMethod.Heap, bool decrypt_blk = false, uint decrypt_key = 0, int header = 0, decimal refreshrate = 1000)
     {
         InitializeComponent();
         this.TranslateInterface(WinFormsTranslator.CurrentLanguage);
         PG_BlockView.Size = RTB_RAM.Size;
+        RT_Timer.Value = RefreshRate = refreshrate;
         refresh.Interval = (double)RT_Timer.Value;
         refresh.Elapsed += AutoRefresh;
         refresh.AutoReset = false;
@@ -219,6 +220,7 @@ public partial class SimpleHexEditor : Form
     private void RT_Timer_ValueChanged(object sender, EventArgs e)
     {
         refresh.Interval = (double)RT_Timer.Value;
+        RefreshRate = RT_Timer.Value;
     }
 }
 

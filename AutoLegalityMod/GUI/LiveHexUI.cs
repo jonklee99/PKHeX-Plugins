@@ -460,7 +460,7 @@ public partial class LiveHeXUI : Form, ISlotViewer<PictureBox>
                 }
             }
 
-            using var form = new SimpleHexEditor(result.ToArray(), Remote.Bot, offset, GetRWMethod());
+            using var form = new SimpleHexEditor(result.ToArray(), Remote.Bot, offset, GetRWMethod(),refreshrate: _settings.refreshRate);
             var loadgrid = blockview && ReflectUtil.GetPropertiesCanWritePublicDeclared(pkm!.GetType()).Count() > 1;
             if (loadgrid)
             {
@@ -469,6 +469,7 @@ public partial class LiveHeXUI : Form, ISlotViewer<PictureBox>
             }
 
             var res = form.ShowDialog();
+            _settings.refreshRate = form.RefreshRate;
             if (res != DialogResult.OK)
             {
                 return;
@@ -669,7 +670,7 @@ public partial class LiveHeXUI : Form, ISlotViewer<PictureBox>
                 }
             }
 
-            using (var form = new SimpleHexEditor(result.ToArray(), Remote.Bot, address, RWMethod.Absolute, blk_key, keyval, header))
+            using (var form = new SimpleHexEditor(result.ToArray(), Remote.Bot, address, RWMethod.Absolute, blk_key, keyval, header,_settings.refreshRate))
             {
                 var loadgrid = blockview && ReflectUtil.GetPropertiesCanWritePublicDeclared(pkm!.GetType()).Count() > 1;
                 if (loadgrid)
@@ -679,6 +680,7 @@ public partial class LiveHeXUI : Form, ISlotViewer<PictureBox>
                 }
 
                 var res = form.ShowDialog();
+                _settings.refreshRate = form.RefreshRate;
                 if (res == DialogResult.OK)
                 {
                     if (loadgrid)
@@ -808,7 +810,7 @@ public partial class LiveHeXUI : Form, ISlotViewer<PictureBox>
         else if (sb is SCBlock or IDataIndirect or ICustomBlock)
         {
             // Must be single block output
-            using var form = new SimpleHexEditor(data[0]);
+            using var form = new SimpleHexEditor(data[0], refreshrate: _settings.refreshRate);
             if (sb is IDataIndirect or ICustomBlock)
             {
                 var props = ReflectUtil.GetPropertiesCanWritePublicDeclared(sb.GetType());
@@ -828,16 +830,18 @@ public partial class LiveHeXUI : Form, ISlotViewer<PictureBox>
                 }
             }
             var res = form.ShowDialog();
+            _settings.refreshRate = form.RefreshRate;
             write = res == DialogResult.OK;
         }
         else if (sb is not null)
         {
-            using var form = new SimpleHexEditor(data[0]);
+            using var form = new SimpleHexEditor(data[0],refreshrate: _settings.refreshRate);
 
             form.PG_BlockView.Visible = true;
             form.PG_BlockView.SelectedObject = SAV.SAV;
-            
+
             var res = form.ShowDialog();
+            _settings.refreshRate = form.RefreshRate;
             write = res == DialogResult.OK;
         }
         if (!write)
@@ -918,11 +922,11 @@ public partial class LiveHeXUI : Form, ISlotViewer<PictureBox>
                 return false;
             if (Remote.Bot.Injector is LPFRLG)
             {
-                var prop = sav.GetType().GetProperty(display) ?? throw new Exception($"{display} not found");
-                if (display == "Large")
-                    sb = ((SAV3)sav).Large.ToArray();
+                var prop = sav.GetType().GetProperties().Where(p=> p.Name == subblocks[0].Name) ?? throw new Exception($"{display} not found");
+                if (subblocks[0].Name == "LargeBlock")
+                    sb = ((SAV3)sav).LargeBlock;
                 else
-                    sb = prop.GetValue(sav);
+                    sb = ((SAV3)sav).SmallBlock;
                 return sb is not null;
             }
             // Check for SCBlocks or SaveBlocks based on name. (SCBlocks will invoke the hex editor, SaveBlocks will invoke a property grid
@@ -1065,7 +1069,7 @@ internal class HexTextBox : TextBox
             var text = Clipboard.GetText();
             if (text.StartsWith("0x"))
             {
-                text = text[2..];
+                text = text[2..].Trim();
                 Clipboard.SetText(text);
             }
         }

@@ -51,11 +51,12 @@ public enum LiveHeXVersion
     ZA_v103 = 37,
     ZA_v200 = 38,
     ZA_v201 = 39,
+    ZA_v202 = 40,
 
-    FRLG_E_v100 = 40,
-    FRLG_S_v100 = 41,
-    FRLG_F_v100 = 42,
-    FRLG_D_v100 = 43,
-    FRLG_I_v100 = 44,
-    FRLG_J_v100 = 45,
+    FRLG_E_v100 = 41,
+    FRLG_S_v100 = 42,
+    FRLG_F_v100 = 43,
+    FRLG_D_v100 = 44,
+    FRLG_I_v100 = 45,
+    FRLG_J_v100 = 46,
 }
