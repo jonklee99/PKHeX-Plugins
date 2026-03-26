@@ -46,22 +46,6 @@ public sealed class LiveHeXController
         Bot.SendBox(boxData, box);
     }
 
-    public void WriteActiveSlot(int box, int slot)
-    {
-        var pkm = Editor.PreparePKM();
-        pkm.ResetPartyStats();
-        SAV.SAV.AdaptToSaveFile(pkm);
-        var data = RamOffsets.WriteBoxData(Bot.Version) ? pkm.EncryptedBoxData : pkm.EncryptedPartyData;
-        Bot.SendSlot(data, box, slot);
-    }
-
-    public void ReadActiveSlot(int box, int slot)
-    {
-        var data = Bot.ReadSlot(box, slot);
-        var pkm = SAV.SAV.GetDecryptedPKM(data.ToArray());
-        Editor.PopulateFields(pkm);
-    }
-
     public bool ReadOffset(ulong offset, RWMethod method = RWMethod.Heap)
     {
         var data = ReadData(offset, method);

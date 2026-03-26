@@ -31,6 +31,7 @@ public static class PKSMUtil
         magic.CopyTo(bank);
         WriteInt32LittleEndian(bank[8..], (int)version);
         WriteInt32LittleEndian(bank[12..], boxcount);
+        Span<byte> decrypted = stackalloc byte[pksmsize];
         foreach (var f in files)
         {
             var fi = new FileInfo(f);
@@ -48,7 +49,7 @@ public static class PKSMUtil
 
             var ofs = 16 + (ctr * pksmsize);
             WriteInt32LittleEndian(bank[ofs..], (int)GetPKSMFormat(pk));
-            var decrypted = pk.DecryptedBoxData;
+            pk.WriteDecryptedDataStored(decrypted);
             decrypted.CopyTo(bank[(ofs + 4)..]);
 
             var repeat = pksmsize - decrypted.Length - 8;
@@ -83,6 +84,7 @@ public static class PKSMUtil
         var pkmsize = GetBankSize(ver);
         var start = GetBankStartIndex(ver);
         previews = [];
+        Span<byte> decrypted = stackalloc byte[pkmsize];
         for (int i = start; i < bank.Length; i += pkmsize)
         {
             var pk = GetPKSMStoredPKM(bank[i..]);
@@ -95,7 +97,8 @@ public static class PKSMUtil
             var strings = GameInfo.Strings;
             previews.Add(new PKMPreview(pk, strings));
             var fileName = Path.Combine(dir, PathUtil.CleanFileName(pk.FileName));
-            File.WriteAllBytes(fileName, pk.DecryptedPartyData);
+            pk.WriteDecryptedDataStored(decrypted);
+            File.WriteAllBytes(fileName, decrypted);
             ctr++;
         }
         return ctr;

@@ -127,7 +127,7 @@ public sealed class LPFRLG : InjectionBase
     {
         var offsets = SCBlocks[psb.Version].FirstOrDefault(z => z.Display == block) ?? throw new KeyNotFoundException($"Block '{block}' not found for version {psb.Version}");
         var props = sav.GetType().GetProperties().Where(p=> p.Name == offsets.Name) ?? throw new Exception($"{block} not found");
-        var data = offsets.Name == "LargeBlock" ? ((SAV3)sav).LargeBlock.Data : ((SAV3)sav).SmallBlock.Data;
+        var data = offsets.Name == "LargeBlock" ? ((SAV3FRLG)sav).LargeBlock.Data : ((SAV3FRLG)sav).SmallBlock.Data;
         var blockoff = GetBlockOffset(psb, offsets);
         psb.com.WriteBytes(data, blockoff);
     }
@@ -154,20 +154,7 @@ public sealed class LPFRLG : InjectionBase
             _ => bytes.ToArray(),
         };
     }
-    private static BlockData Get(uint offset, string name, string display, SCTypeCode type) => new()
-    {
-        Name = name,
-        Display = display,
-        Type = type,
-        Offset = offset,
-    };
-    private static BlockData Get(uint offset, string name, string display, bool secured) => new()
-    {
-        Name = name,
-        Display = display,
-        Offset = offset,
-        IsSecured = secured,
-    };
+
     private static BlockData Get(uint offset, string name, string display) => new()
     {
         Name = name,
@@ -176,8 +163,11 @@ public sealed class LPFRLG : InjectionBase
     };
     public static readonly BlockData[] Blocks_FRLG =
     [
-        Get(0, "LargeBlock", "TrainerInfo", true),
+        Get(0, "LargeBlock", "Block Data"),
+        Get(0, "LargeBlock", "Roamer"),
         Get(0, "LargeBlock", "Inventory"),
+        Get(0, "LargeBlock", "Event Work"),
+        Get(0, "LargeBlock", "Pokédex"),
         Get(0, "SmallBlock", "SecurityKey")
     ];
     public static readonly Dictionary<LiveHeXVersion, BlockData[]> SCBlocks = new()
@@ -192,6 +182,9 @@ public sealed class LPFRLG : InjectionBase
     public override Dictionary<string, string> SpecialBlocks { get; } = new()
     {
         { "Inventory", "B_OpenItemPouch_Click" },
+        {  "Roamer", "B_Roamer_Click"  },
+        { "Event Work", "B_OpenEventFlags_Click" },
+        {  "Pokédex", "B_OpenPokedex_Click"  },
     };
 }
 

@@ -61,9 +61,12 @@ public class LivingDex : AutoModPlugin
         using var ofd = new FolderBrowserDialog();
         if (ofd.ShowDialog() != DialogResult.OK)
             return;
-
+        Span<byte> PokeData = stackalloc byte[sav.SIZE_PARTY];
         foreach (var f in extra)
-            await File.WriteAllBytesAsync($"{ofd.SelectedPath}/{f.FileName}", f.DecryptedPartyData);
+        {
+            f.WriteDecryptedDataParty(PokeData);
+            File.WriteAllBytes($"{ofd.SelectedPath}/{f.FileName}", PokeData);
+        }
     }
 
     private static void PollingLoop(ALMStatusBar t)

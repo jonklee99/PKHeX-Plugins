@@ -28,6 +28,7 @@ public class TrainerTemplates : AutoModPlugin
 
         var preservesettings = ParseSettings.Settings.Handler.CheckActiveHandler;
         ParseSettings.Settings.Handler.CheckActiveHandler = false;
+        var BoxData = new Span<byte>();
         for (int i = 1; i < 52; i++)
         {
             if (!Enum.IsDefined(typeof(GameVersion), (byte)i))
@@ -47,7 +48,8 @@ public class TrainerTemplates : AutoModPlugin
 
             var temp = BlankSaveFile.Get((GameVersion)i, TrainerSettings.DefaultOT);
             var result = temp.GetLegalFromSet(set);
-            File.WriteAllBytes(TrainerPath + "/" + result.Created.FileName, result.Created.EncryptedBoxData);
+            result.Created.WriteEncryptedDataStored(BoxData);
+            File.WriteAllBytes(TrainerPath + "/" + result.Created.FileName, BoxData);
         }
         ParseSettings.Settings.Handler.CheckActiveHandler = preservesettings;
 
