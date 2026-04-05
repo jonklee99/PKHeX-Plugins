@@ -108,7 +108,7 @@
             CB_BlockName.Location = new System.Drawing.Point(53, 22);
             CB_BlockName.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             CB_BlockName.Name = "CB_BlockName";
-            CB_BlockName.Size = new System.Drawing.Size(176, 22);
+            CB_BlockName.Size = new System.Drawing.Size(224, 22);
             CB_BlockName.Sorted = true;
             CB_BlockName.TabIndex = 22;
             // 

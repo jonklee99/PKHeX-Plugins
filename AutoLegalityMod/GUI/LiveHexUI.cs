@@ -96,11 +96,15 @@ public partial class LiveHeXUI : Form, ISlotViewer<PictureBox>
             return;
         SAV.SAV.AdaptToSaveFile(pkm);
         var size = RamOffsets.WriteBoxData(Remote.Bot.Version) ? SAV.SAV.SIZE_STORED : SAV.SAV.SIZE_PARTY;
+        if (Remote.Bot.Version >= LiveHeXVersion.ZA_v101 && Remote.Bot.Version <= LiveHeXVersion.ZA_v202)
+            size = 345;
         Span<byte> PokemonData = stackalloc byte[size];
         if (RamOffsets.WriteBoxData(Remote.Bot.Version))
             pkm.WriteEncryptedDataStored(PokemonData);
         else
             pkm.WriteEncryptedDataParty(PokemonData);
+        if (Remote.Bot.Version >= LiveHeXVersion.ZA_v101 && Remote.Bot.Version <= LiveHeXVersion.ZA_v202)
+            PokemonData[344] = (byte)(pkm.Species == 0 ? 0 : 1);
         Remote.Bot.SendSlot(PokemonData, SIB.Box, SIB.Slot);
     }
 
