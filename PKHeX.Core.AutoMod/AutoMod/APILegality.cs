@@ -1364,6 +1364,9 @@ public static class APILegality
             // Default: preserve all criteria - encounter generation will handle PID-IV correlation constraints
             _ => criteria,
         };
+        if (enc.Generation > 7)
+            criteria = criteria with { Nature = Nature.Random };
+        return criteria;
     }
 
     private static EncounterCriteria Revise(EncounterCriteria enc,

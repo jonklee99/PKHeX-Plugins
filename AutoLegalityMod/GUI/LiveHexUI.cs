@@ -104,7 +104,7 @@ public partial class LiveHeXUI : Form, ISlotViewer<PictureBox>
         else
             pkm.WriteEncryptedDataParty(PokemonData);
         if (Remote.Bot.Version >= LiveHeXVersion.ZA_v101 && Remote.Bot.Version <= LiveHeXVersion.ZA_v202)
-            PokemonData[344] = (byte)(pkm.Species == 0 ? 0 : 1);
+            PokemonData[344] = (byte)(pkm.Species == 0 ? PokemonData[344] : 1);
         Remote.Bot.SendSlot(PokemonData, SIB.Box, SIB.Slot);
     }
 
@@ -341,6 +341,8 @@ public partial class LiveHeXUI : Form, ISlotViewer<PictureBox>
         if (lv is LiveHeXVersion.Unknown && _settings.EnableDevMode)
             return (LiveHeXValidation.None, "", lv);
         var data = Remote.Bot.ReadSlot(0, 0);
+        if (lv >= LiveHeXVersion.ZA_v101 && lv <= LiveHeXVersion.ZA_v202)
+            data = data[..344]; //shrink pa9 to incorrect size so debug build doesn't crash
         var pkm = SAV.SAV.GetDecryptedPKM(data.ToArray());
         bool valid = pkm.Species <= pkm.MaxSpeciesID && pkm.ChecksumValid &&
                      pkm is { Species: 0, EncryptionConstant: 0 }

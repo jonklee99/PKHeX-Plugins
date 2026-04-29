@@ -162,7 +162,7 @@ public sealed class LPBDSP : InjectionBase
         sb.WriteBytesAbsolute(data, pkmptr + 0x20);
     }
 
-    public override void SendBox(PokeSysBotMini psb, ReadOnlySpan<byte> boxData, int box)
+    public override void SendBox(PokeSysBotMini psb, Span<byte> boxData, int box)
     {
         if (psb.com is not ICommunicatorNX sb)
             return;

@@ -437,8 +437,21 @@ public static class ShowdownEdits
             gb.MaxEVs();
             return;
         }
-
-        pk.SetEVs(set.EVs);
+        if (set.IsChampions)
+            pk.SetEVsChampions(set.EVs);
+        else
+            pk.SetEVs(set.EVs);
+    }
+    /// <summary>
+    /// Convert Champions EVs to regular EVs and set them for the PKM. Champions EVs are on a different scale, so they need to be converted before being applied.
+    /// </summary>
+    /// <param name="pk"></param>
+    /// <param name="evs"></param>
+    public static void SetEVsChampions(this PKM pk, ReadOnlySpan<int> evs)
+    {
+        Span<int> final = stackalloc int[6];
+        EffortValues.ConvertFromChampions(evs, final);
+        pk.SetEVs(final);
     }
     /// <summary>
     /// Set encounter trade IVs for a specific encounter trade

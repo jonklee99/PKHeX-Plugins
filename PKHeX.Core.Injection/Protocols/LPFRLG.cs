@@ -86,7 +86,7 @@ public sealed class LPFRLG : InjectionBase
         psb.com.WriteBytes(data, slotstart + slotOffset);
     }
 
-    public override void SendBox(PokeSysBotMini psb, ReadOnlySpan<byte> boxData, int box)
+    public override void SendBox(PokeSysBotMini psb, Span<byte> boxData, int box)
     {
         var boxoff = GetBoxOffset(psb);
         var boxsize = RamOffsets.GetSlotCount(psb.Version) * RamOffsets.GetSlotSize(psb.Version);

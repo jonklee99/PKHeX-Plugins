@@ -89,7 +89,7 @@ public abstract class InjectionBase
 
     public virtual Span<byte> ReadSlot(PokeSysBotMini psb, int box, int slot) => [];
 
-    public virtual void SendBox(PokeSysBotMini psb, ReadOnlySpan<byte> boxData, int box) { }
+    public virtual void SendBox(PokeSysBotMini psb, Span<byte> boxData, int box) { }
 
     public virtual void SendSlot(PokeSysBotMini psb, ReadOnlySpan<byte> data, int box, int slot) { }
 

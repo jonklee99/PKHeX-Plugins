@@ -332,12 +332,20 @@ public sealed class LPPointer : InjectionBase
         psb.com.WriteBytes(data, slotstart);
     }
 
-    public override void SendBox(PokeSysBotMini psb, ReadOnlySpan<byte> boxData, int box)
+    public override void SendBox(PokeSysBotMini psb, Span<byte> boxData, int box)
     {
         if (psb.com is not ICommunicatorNX sb)
             return;
-
+        
         var lv = psb.Version;
+        if (lv >= LiveHeXVersion.ZA_v101 && lv <= LiveHeXVersion.ZA_v202)
+        {
+            for ( var i = 0; i < 30; i++)
+            {
+                var data = boxData.Slice(i * 408, 408);
+                data[344] = (byte)(data[0x08] == 0 ? data[344] : 1);
+            }
+        }
         var b1s1 = sb.GetPointerAddress(GetB1S1Pointer(lv));
         var boxsize = RamOffsets.GetSlotCount(lv) * RamOffsets.GetSlotSize(lv);
         var boxstart = b1s1 + (ulong)(box * boxsize);

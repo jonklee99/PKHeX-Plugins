@@ -46,7 +46,7 @@ public sealed class LPLGPE : InjectionBase
         psb.com.WriteBytes(data[StoredLength..], slotofs + (ulong)StoredLength + 0x70);
     }
 
-    public override void SendBox(PokeSysBotMini psb, ReadOnlySpan<byte> boxData, int box)
+    public override void SendBox(PokeSysBotMini psb, Span<byte> boxData, int box)
     {
         int size = psb.SlotSize;
         for (int i = 0; i < psb.SlotCount; i++)

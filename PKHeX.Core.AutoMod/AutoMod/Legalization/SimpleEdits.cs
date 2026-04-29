@@ -540,7 +540,7 @@ public static class SimpleEdits
     {
         if (TradeRestrictions.IsUntradableEncounter(enc))
             return;
-        if (enc.Version == GameVersion.PLA && trainer.Version == GameVersion.PLA) return; //just use the link cable item HT not required;
+        if (enc.Version == GameVersion.PLA && trainer.Version == GameVersion.PLA) { pk.OriginalTrainerGender = trainer.Gender; } //just use the link cable item HT not required;
         var expect = trainer.IsFromTrainer(pk) ? 0 : 1;
         if (pk.CurrentHandler == expect && expect == 0 && !IsTradeEvolutionRequired((Species)pk.Species, enc))
             return;
