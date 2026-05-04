@@ -91,8 +91,8 @@ public static class APILegality
             encounters = encounters.Where(enc => enc is (IGenerateSeed32 or IGenerateSeed64)); // Only allow seed generation for seed encounters
         if (ogenc is not null)
             encounters = encounters.OrderByDescending(e => ReferenceEquals(e, ogenc));
-        if (set is { Shiny: true, Species: (ushort)Species.Keldeo }) //Keldeo seems to be the only recent shiny unlock impacted by this encounter order failure, add edge case for it until a better solution can be found
-            encounters = encounters.OrderByDescending(e => e.Shiny == Shiny.Always);
+        if (set.Shiny) // Prioritize guaranteed-shiny encounters so species with multiple encounters (e.g. Lopunny in ZA) don't get stuck on a Random-shiny encounter that fails to produce shiny.
+            encounters = encounters.OrderByDescending(e => e.Shiny is Shiny.Always or Shiny.AlwaysStar or Shiny.AlwaysSquare);
         PKM? last = null;
         var timer = Stopwatch.StartNew();
         foreach (var enc in encounters)
