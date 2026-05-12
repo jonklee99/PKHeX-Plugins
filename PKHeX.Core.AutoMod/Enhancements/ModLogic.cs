@@ -259,7 +259,7 @@ public static class ModLogic
             blank.Form = form;
         }
 
-        var template = EntityBlank.GetBlank(tr.Generation, tr.Version);
+        var template = EntityBlank.GetBlank(tr);
         var item = GetFormSpecificItem(tr.Version, tr.Generation, blank.Species, blank.Form);
         if (item is not null)
             blank.HeldItem = (int)item;
