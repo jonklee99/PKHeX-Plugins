@@ -58,7 +58,14 @@ public static class ShowdownEdits
     {
         if (pk.Nature == set.Nature || set.Nature == Nature.Random)
             return;
-
+        if (enc.Generation <= 2 && pk.Format >= 7)
+        {
+            if (pk.MetLevel == 2)
+            {
+                if (!Experience.IsValidNatureMetLevel2(pk.CurrentLevel, set.Nature) && pk.CurrentLevel != 2)
+                    pk.MetLevel = 3;
+            }
+        }
         var val = set.Nature <= Nature.Quirky ? set.Nature : Nature.Hardy;
         if (pk.Species == (ushort)Species.Toxtricity)
         {

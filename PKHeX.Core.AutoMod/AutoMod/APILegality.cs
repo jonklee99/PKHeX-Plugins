@@ -743,7 +743,7 @@ public static class APILegality
     /// </summary>
     private static void SetPINGA(this PKM pk, IBattleTemplate set, PIDType method, int hpType, IEncounterTemplate enc)
     {
-        if (enc is not EncounterStatic4Pokewalker && (enc.Generation > 2 || pk.Format >= 7))
+        if (enc is not EncounterStatic4Pokewalker && (enc.Generation > 2 || (enc.Generation <= 2 && pk.Format >= 7)))
             ShowdownEdits.SetNature(pk, set, enc);
 
         // If PID and IV is handled in PreSetPIDIV, don't set it here again and return out
