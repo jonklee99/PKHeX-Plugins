@@ -571,7 +571,7 @@ public static class APILegality
 
         // Actions that do not affect set legality
         pk.SetHandlerAndMemory(handler, enc);
-        pk.SetFriendship(enc);
+        pk.SetFriendship(enc, set.Friendship);
         pk.SetRecordFlags(set.Moves);
 
         // Legality Fixing

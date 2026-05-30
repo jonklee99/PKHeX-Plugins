@@ -1,11 +1,12 @@
-﻿using System;
+﻿using Microsoft.VisualBasic.Devices;
+using PKHeX.Core;
+using PKHeX.Core.Injection;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Timers;
 using System.Windows.Forms;
-using PKHeX.Core;
-using PKHeX.Core.Injection;
 
 namespace AutoModPlugins.GUI;
 
@@ -123,8 +124,31 @@ public partial class SimpleHexEditor : Form
     {
         var bytestring = RTB_RAM.Text.Replace("\t", "").Replace(" ", "").Trim();
         Bytes = Decoder.StringToByteArray(bytestring);
-        DialogResult = DialogResult.OK;
-        Close();
+
+        if (new Keyboard().CtrlKeyDown)
+        {
+            if (psb.com is not ICommunicatorNX nx)
+            {
+                psb.com.WriteBytes(Bytes, address);
+            }
+            else if (method == RWMethod.Main)
+            {
+                nx.WriteBytesMain(Bytes, address);
+            }
+            else if (method == RWMethod.Absolute)
+            {
+                nx.WriteBytesAbsolute(Bytes, address);
+            }
+            else
+            {
+                psb.com.WriteBytes(Bytes, address);
+            }
+        }
+        else
+        {
+            DialogResult = DialogResult.OK;
+            Close();
+        }
     }
 
 
