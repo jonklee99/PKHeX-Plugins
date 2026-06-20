@@ -23,7 +23,7 @@ Use this build method only if the regular builds fail. The Azure Pipelines CI wi
 - Open the PKHeX-Plugins solution and right-click to `Restore NuGet Packages`.
 - Next, replace the most recent NuGet packages with the newly-built `PKHeX.Core.dll` files.
    - Copy the `PKHeX.Core.dll` file located in `PKHeX.Core\bin\Release\net10.0` to the following folder with the most recent date:
-       * `C:\Users\%USERNAME%\.nuget\packages\pkhex.core\YY.MM.DD\lib\net9.0`
+       * `C:\Users\%USERNAME%\.nuget\packages\pkhex.core\YY.MM.DD\lib\net10.0`
 - Right click the PKHeX-Plugins solution and `Rebuild All`. This should build the mod with the latest `PKHeX.Core` version so that it can be used with the latest commit of PKHeX.
 - The compiled DLLs will be in the same location as with the regular builds. 
 
