@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using Microsoft.VisualBasic.Devices;
 using System.Threading.Tasks;
 using AutoModPlugins.GUI;
+using System.Threading;
 
 namespace AutoModPlugins;
 
@@ -27,7 +28,7 @@ public class LivingDex : AutoModPlugin
         ctrl.Name = "Menu_LivingDex";
         modmenu.DropDownItems.Add(ctrl);
     }
-
+    public static CancellationTokenSource cts;
     private async void GenLivingDex(object? sender, EventArgs e)
     {
         var prompt = WinFormsUtil.Prompt(MessageBoxButtons.YesNo, "Generate a Living Dex?");
@@ -40,11 +41,14 @@ public class LivingDex : AutoModPlugin
             Count = ModLogic.TrackingCount
         };
         t.Show();
-
+        cts = new();
         // After showing the form, start a polling loop
         _ = Task.Run(() => PollingLoop(t));
 
-        var dex = await Task.Run(() => egg ? sav.GenerateLivingEggDex(sav.Personal) : sav.GenerateLivingDex(sav.Personal));
+        var dex = await Task.Run(() => egg ? sav.GenerateLivingEggDex(sav.Personal) : sav.GenerateLivingDex(sav.Personal), cts.Token);
+        if (cts.IsCancellationRequested)
+            return;
+
         List<PKM> extra = [];
         t.Close();
         prompt = WinFormsUtil.Prompt(MessageBoxButtons.YesNo, "Overwrite any existing Pokémon in your boxes?");
