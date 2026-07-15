@@ -15,6 +15,7 @@ public static class TrainerSettings
     private static readonly SimpleTrainerInfo DefaultFallback9 = new(GameVersion.VL) { Generation = 9 };
     private static readonly SimpleTrainerInfo DefaultFallback8 = new(GameVersion.SW) { Generation = 8 };
     private static readonly SimpleTrainerInfo DefaultFallback7 = new(GameVersion.UM) { Generation = 7 };
+    private static readonly SimpleTrainerInfo DefaultFallback6 = new(GameVersion.AS) { Generation = 6 };
 
     private static ReadOnlySpan<GameVersion> FringeVersions =>
     [
@@ -29,7 +30,7 @@ public static class TrainerSettings
 
     public static ITrainerInfo DefaultFallback(EntityContext gen = Gen8, LanguageID? lang = null)
     {
-        var fallback = gen > Gen8 ? DefaultFallback9 : gen > Gen7 ? DefaultFallback8 : DefaultFallback7;
+        var fallback = gen > Gen8 ? DefaultFallback9 : gen > Gen7 ? DefaultFallback8 : gen == Gen6 ? DefaultFallback6 : DefaultFallback7;
         return lang == null ? fallback : (ITrainerInfo)new SimpleTrainerInfo(fallback.Version) { Language = (int)lang };
     }
 

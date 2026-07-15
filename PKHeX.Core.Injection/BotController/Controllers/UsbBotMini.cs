@@ -1,11 +1,11 @@
-﻿using System;
+﻿using LibUsbDotNet;
+using LibUsbDotNet.Main;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using LibUsbDotNet;
-using LibUsbDotNet.Main;
 using static System.Buffers.Binary.BinaryPrimitives;
 
 namespace PKHeX.Core.Injection;

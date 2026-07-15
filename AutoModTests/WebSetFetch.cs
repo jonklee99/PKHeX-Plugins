@@ -1,9 +1,9 @@
-﻿using System;
-using System.Linq;
-using FluentAssertions;
+﻿using FluentAssertions;
 using PKHeX.Core;
 using PKHeX.Core.AutoMod;
 using PKHeX.Core.Enhancements;
+using System;
+using System.Linq;
 using Xunit;
 
 namespace AutoModTests;

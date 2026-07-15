@@ -293,7 +293,7 @@ public static class ModLogic
         if (success == LegalizationResult.Regenerated)
             return pk;
 
-        sset = new ShowdownSet(setText.Split('\r')[0]);
+        sset = new ShowdownSet(setText.Split(Environment.NewLine)[0]);
         set = new RegenTemplate(sset) { Nickname = string.Empty };
         template.ApplySetDetails(set);
 
@@ -350,6 +350,8 @@ public static class ModLogic
             (ushort)Giratina => form == 1 && generation < 9 ? 112 : form == 1 ? 1779 : null, // Griseous Orb
             (ushort)Zacian => form == 1 ? 1103 : null, // Rusted Sword
             (ushort)Zamazenta => form == 1 ? 1104 : null, // Rusted Shield
+            (ushort)Dialga => form == 1 ? 1777 : null, // Adamant Crystal
+            (ushort)Palkia => form == 1 ? 1778 : null, // Lustrous Globe
             _ => null,
         };
     }

@@ -1,4 +1,4 @@
-using AutoModPlugins.GUI;
+﻿using AutoModPlugins.GUI;
 using PKHeX.Core;
 using PKHeX.Core.Injection;
 using System;

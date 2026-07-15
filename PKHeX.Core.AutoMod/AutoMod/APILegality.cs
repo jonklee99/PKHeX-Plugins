@@ -50,7 +50,7 @@ public static class APILegality
         RegenSet regen;
         if (set is RegenTemplate t)
         {
-            t.FixGender(template.PersonalInfo);
+            template.FixGender(set);
             regen = t.Regen;
         }
         else
@@ -116,6 +116,31 @@ public static class APILegality
             var raw = enc.GetPokemonFromEncounter(tr, criteria, set);
             if (raw.OriginalTrainerName.Length == 0)
             {
+                if (enc is EncounterGift1 g1 && enc.Species == (ushort)Species.Mew)
+                {
+                    raw.TID16 = g1.Trainer switch
+                    {
+                        EncounterGift1.TrainerType.Recipient => tr.TID16,
+                        EncounterGift1.TrainerType.Stadium => tr.Language == (int)LanguageID.Japanese ? (ushort)1999 : (ushort)2000,
+                        EncounterGift1.TrainerType.VirtualConsoleMew => 2_27_96,
+                    };
+                    raw.OriginalTrainerName = g1.Trainer switch
+                    {
+                        EncounterGift1.TrainerType.Recipient => EncounterUtil.GetTrainerName(tr, tr.Language),
+                        EncounterGift1.TrainerType.Stadium => (LanguageID)tr.Language switch
+                        {
+                            LanguageID.Japanese => "スタジアム",
+                            LanguageID.English => "STADIUM",
+                            LanguageID.French => "STADE",
+                            LanguageID.Italian => "STADIO",
+                            LanguageID.German => "STADIUM", // Same as English
+                            LanguageID.Spanish => "ESTADIO",
+                            _ => "STADIUM", // shouldn't hit here
+                        },
+                        EncounterGift1.TrainerType.EuropeTour => "YOSHIRA", // YOSHIRA
+                        _ => string.Empty,
+                    };
+                }
                 raw.Language = tr.Language;
                 tr.ApplyTo(raw);
             }
@@ -145,6 +170,19 @@ public static class APILegality
             else
             {
                 raw.PreSetPIDIV(enc, set, criteria);
+            }
+
+            if (enc is EncounterTrade8b { Species: (ushort)Species.Magikarp })
+            {
+                tr = set.Nickname switch
+                {
+                    "ポッちゃん" => SaveUtil.GetBlankSAV(tr.Context, tr.OT, LanguageID.Japanese),
+                    "Bloupi" => SaveUtil.GetBlankSAV(tr.Context, tr.OT, LanguageID.French),
+                    "Mossy" => SaveUtil.GetBlankSAV(tr.Context, tr.OT, LanguageID.Italian),
+                    "Pador" => SaveUtil.GetBlankSAV(tr.Context, tr.OT, LanguageID.German),
+                    _ => SaveUtil.GetBlankSAV(tr.Context, tr.OT, LanguageID.English),
+                };
+                raw = enc.ConvertToPKM(tr);
             }
             // Transfer any VC1 via VC2, as there may be GSC exclusive moves requested.
             if (dest.Generation >= 7 && raw is PK1 basepk1)
@@ -789,7 +827,7 @@ public static class APILegality
         if (enc.Generation is not (3 or 4))
         {
             pk.SetIVs(set.IVs);
-            if (pk is not IAwakened)
+            if (pk is not PB7)
                 return;
 
             pk.SetAwakenedValues(set);

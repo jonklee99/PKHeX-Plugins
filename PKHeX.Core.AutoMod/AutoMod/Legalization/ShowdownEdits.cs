@@ -432,7 +432,7 @@ public static class ShowdownEdits
     /// <param name="enc">Encounter to reference</param>
     public static void SetEV(this PKM pk, IBattleTemplate set)
     {
-        if (pk is IAwakened)
+        if (pk is PB7)
         {
             pk.SetAwakenedValues(set);
             return;
@@ -495,7 +495,15 @@ public static class ShowdownEdits
         switch ((Species)pk.Species)
         {
             case Species.Arceus:
+                byte forma = FormItem.GetFormArceus(pk.HeldItem, pk.Format);
+                pk.HeldItem = pk.Form != forma ? 0 : pk.HeldItem;
+                pk.Form = pk.Form != forma ? (byte)0 : forma;
+                break;
             case Species.Silvally:
+                byte forms = FormItem.GetFormSilvally(pk.HeldItem);
+                pk.HeldItem = pk.Form != forms ? 0 : pk.HeldItem;
+                pk.Form = pk.Form != forms ? (byte)0 : forms;
+                break;
             case Species.Genesect:
                 bool valid = FormItem.TryGetForm(pk.Species, pk.HeldItem, pk.Format, out byte pkform);
                 if (!valid)

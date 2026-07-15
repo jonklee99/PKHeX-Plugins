@@ -1,4 +1,4 @@
-﻿namespace PKHeX.Core.AutoMod;
+namespace PKHeX.Core.AutoMod;
 
 public readonly record struct LivingDexConfig
 {

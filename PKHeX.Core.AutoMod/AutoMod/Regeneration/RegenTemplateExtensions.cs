@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -14,7 +14,7 @@ public static class RegenTemplateExtensions
         // Scatterbug must be Meadow, Spewpa must be Meadow or Marine (M&Ms only) until HOME compatibility
         if (set.Context == EntityContext.Gen9a && ((set.Species == (ushort)Species.Scatterbug && set.Form is not 4) || (set.Species == (ushort)Species.Spewpa && set.Form is not 8 && set.Form is not 4) || (set.Species == (ushort)Species.Vivillon && set.Form is not 8 && set.Form is not 4)))
             set.Form = 6;
-        
+
         if (!FormInfo.IsBattleOnlyForm(set.Species, set.Form, gen))
             return;
 

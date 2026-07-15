@@ -1,4 +1,4 @@
-﻿// ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
+// ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
 
 using System;
 using System.Linq;
