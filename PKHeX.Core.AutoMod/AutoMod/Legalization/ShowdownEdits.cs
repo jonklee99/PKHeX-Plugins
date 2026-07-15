@@ -70,18 +70,18 @@ public static class ShowdownEdits
         if (pk.Species == (ushort)Species.Toxtricity)
         {
             if (pk.Form == ToxtricityUtil.GetAmpLowKeyResult(val))
-                pk.Nature = val; // StatAlignment already set
+                pk.Nature = val; // StatNature already set
 
-            if (pk.Format >= 8 && pk.StatAlignment != pk.Nature && pk.StatAlignment != Nature.Serious && (pk.StatAlignment > Nature.Quirky || (int)pk.StatAlignment % 6 == 0)) // Only Serious Mint for Neutral Natures
-                pk.StatAlignment = Nature.Serious;
+            if (pk.Format >= 8 && pk.StatNature != pk.Nature && pk.StatNature != Nature.Serious && (pk.StatNature > Nature.Quirky || (int)pk.StatNature % 6 == 0)) // Only Serious Mint for Neutral Natures
+                pk.StatNature = Nature.Serious;
 
             return;
         }
         if (enc is IEncounter9a || enc is WA9)
         {
-            pk.StatAlignment = val;
-            if (pk.StatAlignment is 0 or Nature.Docile or Nature.Bashful or >= Nature.Quirky) // Only Serious Mint for Neutral Natures
-                pk.StatAlignment = Nature.Serious;
+            pk.StatNature = val;
+            if (pk.StatNature is 0 or Nature.Docile or Nature.Bashful or >= Nature.Quirky) // Only Serious Mint for Neutral Natures
+                pk.StatNature = Nature.Serious;
             return;
         }
         pk.SetNature(val);
@@ -118,8 +118,8 @@ public static class ShowdownEdits
                     pk.Nature = orig;
             }
         }
-        if (pk.Format >= 8 && pk.StatAlignment != pk.Nature && pk.StatAlignment is 0 or Nature.Docile or Nature.Bashful or >= Nature.Quirky) // Only Serious Mint for Neutral Natures
-            pk.StatAlignment = Nature.Serious;
+        if (pk.Format >= 8 && pk.StatNature != pk.Nature && pk.StatNature is 0 or Nature.Docile or Nature.Bashful or >= Nature.Quirky) // Only Serious Mint for Neutral Natures
+            pk.StatNature = Nature.Serious;
     }
 
     /// <summary>
