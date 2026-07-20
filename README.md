@@ -3,7 +3,18 @@ This project uses `PKHeX.Core` and PKHeX's `IPlugin` interface to add enhancemen
 This Fork is owned by [@santacrab2](https://github.com/santacrab2)
 The original project is owned by [@architdate](https://github.com/architdate) (Discord: thecommondude) and [@kwsch](https://github.com/kwsch) (Discord: kwsch).
 
-## Building  
+## Installation and Usage
+If you are trying to install the plugin, follow these instructions on the Wiki. The Wiki also documents other features of the program.
+https://github.com/santacrab2/PKHeX-Plugins/wiki/Installing-PKHeX-Plugins
+
+## Support Server
+Please refer to the [Wiki](https://github.com/santacrab2/PKHeX-Plugins/wiki) first for usage information and help first, as most queries are answered there. If you have looked and need additional help, you can join the dedicated Discord server for this mod!
+
+[<img src="https://discord.com/api/guilds/872587205787394119/widget.png?style=banner2">](https://discord.com/invite/vxT5sSHvvn) <br>
+**Website with Links to downloads for this and other projects by Santacrab**
+[The Sea Tavern's website](https://piplup.net)
+
+## Building  (Developers Only)
 This project requires an IDE that supports compiling .NET based code, such as Visual Studio 2026, and the [.NET 10.0 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/10.0).
 
 **Regular Builds**  
@@ -27,19 +38,6 @@ Use this build method only if the regular builds fail. The Azure Pipelines CI wi
 - Right click the PKHeX-Plugins solution and `Rebuild All`. This should build the mod with the latest `PKHeX.Core` version so that it can be used with the latest commit of PKHeX.
 - The compiled DLLs will be in the same location as with the regular builds. 
 
-## Usage  
-To use the plugins:
-- Create a folder named `plugins` in the same directory as PKHeX.exe.
-- Put the compiled plugins from this project in the `plugins` folder. If you downloaded the plugins from online, you will need to unblock them.
-- Start PKHeX.exe.
-- The plugins should be available for use in `Tools > Auto Legality Mod` drop-down menu.
-
-## Support Server
-Please refer to the [Wiki](https://github.com/santacrab2/PKHeX-Plugins/wiki) first for usage information and help first, as most queries are answered there. If you have looked and need additional help, you can join the dedicated Discord server for this mod!
-
-[<img src="https://discord.com/api/guilds/872587205787394119/widget.png?style=banner2">](https://discord.com/invite/vxT5sSHvvn) <br>
-**Website with Links to downloads for this and other projects by Santacrab**
-[The Sea Tavern's website](https://piplup.net)
 ## Contributing
 To contribute to the repository, you can submit a pull request to the repository. Try to follow a format similar to the current codebase. All contributions are greatly appreciated! If you would like to discuss possible contributions without using GitHub, please contact us on the support server above. 
 
