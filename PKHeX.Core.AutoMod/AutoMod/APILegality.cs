@@ -164,7 +164,7 @@ public static class APILegality
                         break;
                     case IGenerateSeed64 GS64:
                         var converted64 = Convert.ToUInt64(regen.SeedFilters[0], 16);
-                        GS64.GenerateSeed64(raw, converted64); break;
+                        GS64.GenerateSeed64(raw, tr, converted64); break;
                 }
             }
             else
