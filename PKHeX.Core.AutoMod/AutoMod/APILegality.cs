@@ -114,7 +114,7 @@ public static class APILegality
             // Create the PKM from the template.
             var tr = TradeRestrictions.IsUntradableEncounter(enc) ? dest : GetTrainer(regen, enc, set, dest);
             var raw = enc.GetPokemonFromEncounter(tr, criteria, set);
-            if (raw.OriginalTrainerName.Length == 0)
+            if (raw.OriginalTrainerName.Length == 0 || (enc.Context == EntityContext.Gen1 && enc is EncounterSlot1 or EncounterStatic1 && enc.Species != (ushort)Species.Porygon))
             {
                 if (enc is EncounterGift1 g1 && enc.Species == (ushort)Species.Mew)
                 {

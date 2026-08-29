@@ -305,7 +305,7 @@ public static class SimpleEdits
         if (isFixedScale)
             return;
 
-        if (enc is WC8 { IsHOMEGift: true })
+        if (enc is WC8 { IsHOMEGift: true } or WA8 { IsHOMEGift: true})
             return; // HOME gift. No need to set height and weight
 
         if (enc is WC9 wc9)

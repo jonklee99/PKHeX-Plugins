@@ -14,7 +14,9 @@ public class LegalizeBoxes : AutoModPlugin
 
     protected override void AddPluginControl(ToolStripDropDownItem modmenu)
     {
-        var ctrl = new ToolStripMenuItem(Name) { Image = WinFormsUtil.GetIconForTheme(Resources.legalizeboxes, Application.IsDarkModeEnabled) };
+        var ctrl = new ToolStripMenuItem(Name) {
+            Image = WinFormsUtil.GetIconForTheme(Resources.legalizeboxes, Application.IsDarkModeEnabled),
+        };
         ctrl.Click += Legalize;
         ctrl.Name = "Menu_LeaglizeBoxes";
         modmenu.DropDownItems.Add(ctrl);

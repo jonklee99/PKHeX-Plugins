@@ -207,9 +207,6 @@ public static class ShowdownSetLoader
             return AutoModErrorCode.VersionMismatch;
         }
 
-        if (result != AutoModErrorCode.None)
-            return result;
-
         Debug.WriteLine("Multi Set Genning Complete. Setting data to the save file and reloading view.");
         SaveFileEditor.ReloadSlots();
 
@@ -217,7 +214,7 @@ public static class ShowdownSetLoader
         timer.Stop();
         var timespan = timer.Elapsed;
         Debug.WriteLine($"Time to complete {nameof(ImportSetsToBoxes)}: {timespan.Minutes:00} minutes {timespan.Seconds:00} seconds {timespan.Milliseconds / 10:00} milliseconds");
-        return AutoModErrorCode.None;
+        return result;
     }
 
     public static void SetAPILegalitySettings(PluginSettings settings)
@@ -265,8 +262,9 @@ public static class ShowdownSetLoader
 
         foreach (var ep in Enum.GetValues<EncounterTypeGroup>())
         {
-            if (!settings.PrioritizeEncounters.Contains(ep))
+            if (!settings.PrioritizeEncounters.Contains(ep) && ep != 0)
                 settings.PrioritizeEncounters.Add(ep);
+            settings.PrioritizeEncounters.Remove(0);
         }
 
         settings.PrioritizeEncounters = [.. settings.PrioritizeEncounters.Distinct()];

@@ -36,10 +36,7 @@ public class LivingDex : AutoModPlugin
             return;
         bool egg = new Keyboard().AltKeyDown;
         var sav = SaveFileEditor.SAV;
-        var t = new ALMStatusBar("Living Dex", sav.MaxSpeciesID)
-        {
-            Count = ModLogic.TrackingCount
-        };
+        var t = new ALMStatusBar("Living Dex", sav.MaxSpeciesID);
         t.Show();
         cts = new();
         // After showing the form, start a polling loop
@@ -50,7 +47,9 @@ public class LivingDex : AutoModPlugin
             return;
 
         List<PKM> extra = [];
+        t.closedbyuser = false;
         t.Close();
+        cts.Cancel();
         prompt = WinFormsUtil.Prompt(MessageBoxButtons.YesNo, "Overwrite any existing Pokémon in your boxes?");
         int generated = IngestToBoxes(sav, dex, extra, prompt == DialogResult.Yes);
         System.Diagnostics.Debug.WriteLine($"Generated Living Dex with {generated} entries.");

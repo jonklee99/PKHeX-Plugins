@@ -7,7 +7,7 @@ public partial class ALMStatusBar : Form
 {
     private int _count;
     private int _maxTasks;
-
+    public bool closedbyuser = true;
     public int Count
     {
         get => _count;
@@ -31,7 +31,7 @@ public partial class ALMStatusBar : Form
 
     private void ALMStatusBar_FormClosing(object sender, EventArgs e)
     {
-        if (e is FormClosingEventArgs fcea && fcea.CloseReason == CloseReason.UserClosing)
+        if (e is FormClosingEventArgs fcea && closedbyuser)
         {
             var prompt = WinFormsUtil.Prompt(MessageBoxButtons.YesNo, "Are you sure you want to cancel the Living Dex generation?");
             if (prompt != DialogResult.Yes)
